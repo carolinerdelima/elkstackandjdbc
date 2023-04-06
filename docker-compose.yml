@@ -1,40 +1,39 @@
 version: '3'
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
     container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    restart: always
     environment:
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     networks:
       - dev-integracao-servicos_default
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.12.0
+    image: docker.elastic.co/kibana/kibana:7.14.0
     container_name: kibana
+    restart: always
+    ports:
+      - 5601:5601
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     networks:
       - dev-integracao-servicos_default
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.12.0
+    image: docker.elastic.co/logstash/logstash:7.14.0
     container_name: logstash
+    # restart: always
+    ports:
+      - 9600:9600
+      - 5000:5000/udp
+      - 5000:5000/tcp
     volumes:
       - ./config/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./config/mysql-connector-java-8.0.26.jar:/usr/share/logstash/mysql-connector-java-8.0.26.jar
-    environment:
-      - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
-    networks:
-      - dev-integracao-servicos_default
-      
-  jdbc-plugin:
-    image: docker.elastic.co/logstash/logstash:7.12.0
-    container_name: jdbc-plugin
-    command: logstash-plugin install logstash-input-jdbc
-    volumes:
       - ./config/mysql-connector-java-8.0.26.jar:/usr/share/logstash/mysql-connector-java-8.0.26.jar
     networks:
       - dev-integracao-servicos_default
